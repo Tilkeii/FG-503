@@ -16,7 +16,29 @@ var TexCoordLoc;
 var ProjectionLoc;     // Location of the uniform variables in the standard texture mappping shader program.
 var ModelviewLoc;
 var NormalMatrixLoc;
+var initialmodelview;
 
+var carlingueId = 0;
+var preAileDroitId = 1;
+var aileDroitId = 2;
+var reacteurDroitId = 3;
+var preAileGaucheId = 4;
+var aileGaucheId = 5;
+var reacteurGaucheId = 6;
+var avantVaisseauId = 7;
+
+/*var carlingueHeight = 3;
+var carlingueWidth = 7;
+var preAileHeight = 2;
+var preAileWidth = 5;
+var aileHeight = 7;
+var aileWidth = 4;
+var reacteurHeight = 2;
+var reacteurWidth = 4;
+var avantVaisseauHeight = 1;
+var avantVaisseauWidth = 6;*/
+
+var numNodes = 8;
 
 var projection;   //--- projection matrix
 var modelview;    // modelview matrix
@@ -43,8 +65,81 @@ var materialDiffuse = vec4(0.48, 0.55, 0.69, 1.0);
 var materialSpecular = vec4(0.48, 0.55, 0.69, 1.0);
 var materialShininess = 100.0;
 
+var figure = [];
+
+var theta = [0, 0, 0, 0, 0, 0, 0, 0];
+
 var ambientProduct, diffuseProduct, specularProduct;
 
+function scale4(a, b, c) {
+    var result = mat4();
+    result[0][0] = a;
+    result[1][1] = b;
+    result[2][2] = c;
+    return result;
+}
+
+function createNode(transform, render, sibling, child) {
+    var node = {
+        transform: transform,
+        render: render,
+        sibling: sibling,
+        child: child,
+    }
+    return node;
+}
+
+function initNodes(Id) {
+
+    var m = mat4(1, 0, 0, 0,
+                 0, 1, 0, 0,
+                 0, 0, 1, 0,
+                 0, 0, 0, 1);
+
+    switch (Id) {
+
+        case carlingueId:
+
+            m = rotate(theta[carlingueId], 0, 1, 0);
+            figure[carlingueId] = createNode(m, carlingue, null, preAileDroitId);
+            break;
+
+        case preAileDroitId:
+
+            figure[preAileDroitId] = createNode(m, preAileDroit, null, null);
+            break;
+
+
+    }
+
+}
+
+function carlingue() {
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(0.0, 0.0, 0.0));
+    modelview = mult(modelview, rotate(90, 1, 0, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(1.5, 0.5, 0.5));
+    box.render();
+}
+
+function preAileDroit() {
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(20, 0.0, 0.0));
+    modelview = mult(modelview, rotate(90, 1, 0, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(1.5, 0.5, 0.5));
+    box.render();
+}
+
+function traverse(Id) {
+
+    if (Id == null) return;
+    initialmodelview = mult(initialmodelview, figure[Id].transform);
+    figure[Id].render();
+    if (figure[Id].child != null) traverse(figure[Id].child);
+    if (figure[Id].sibling != null) traverse(figure[Id].sibling);
+}
 
 function render() {
     gl.clearColor(0.79, 0.76, 0.27, 1);
@@ -57,9 +152,9 @@ function render() {
     flattenedmodelview = rotator.getViewMatrix();
     modelview = unflatten(flattenedmodelview);
 
-	normalMatrix = extractNormalMatrix(modelview);
-		
-    var initialmodelview = modelview;
+    normalMatrix = extractNormalMatrix(modelview);
+
+    initialmodelview = modelview;
 
     //  Select shader program 
     gl.useProgram(prog);
@@ -73,111 +168,14 @@ function render() {
 
     gl.uniformMatrix4fv(ProjectionLoc, false, flatten(projection));  // send projection matrix to the new shader program
 
-	gl.enableVertexAttribArray(CoordsLoc);
+    gl.enableVertexAttribArray(CoordsLoc);
     gl.enableVertexAttribArray(NormalLoc);
     gl.disableVertexAttribArray(TexCoordLoc);  // we do not need texture coordinates
 
+    traverse(carlingueId);
+    //requestAnimFrame(render);
 
-    //  now, draw sphere model
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(15.0, 0.0, 0.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.5, 0.5));
-    sphere.render();
-
-    //  now, draw box model
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(10.0, 10.0, 0.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.5, 0.5));
-    box.render();
-		
-    //  now, draw cylinder model
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(0.0, 15.0, 0.0));
-    modelview = mult(modelview, rotate(90.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.3, 0.3, 0.3));
-    cylinder.render();
-
-    //  now, draw cone model
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(-10.0, 10.0, 0.0));
-    modelview = mult(modelview, rotate(-90.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.5, 0.5));
-    cone.render();
-		
-    //  now, draw torus model
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(-15.0, -2.0, 0.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.3, 0.3, 0.3));
-    torus.render();
-		
-    //  now, draw disk model
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(-8.0, -12.0, 0.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.5, 0.5));
-    disk.render();
-
-	//  now, draw teapot model
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(7.0, -11.0, 0.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.5, 0.5));
-    teapot.render();
-
-	    //  now, draw hemisphere model (with a thin circular rim)
-		//      Note that this could be done more elegantly using two sets of shaders
-		//         (one for the inside and one for the outside of the same hemisphere)
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(0.0, 15.0, -15.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.5, 0.5));
-    hemisphereoutside.render();
-	modelview = mult(modelview, scale(0.95, 0.95, 0.95));  // MAKE SURE THE INSIDE IS SMALLER THAN THE OUTSIDE
-    hemisphereinside.render();  // in this model, the normals are inverted
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(0.0, 15.0, -15.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.5, 0.5));
-	thindisk.render();
-
-	    //  now, draw quartersphere model
- 		//      Note that this could be done more elegantly using two sets of shaders
-		//         (one for the inside and one for the outside of the same hemisphere)
-	modelview = initialmodelview;
-    modelview = mult(modelview, translate(0.0, 0.0, -15.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.5, 0.5));
-    quartersphereoutside.render();
-	modelview = mult(modelview, scale(0.95, 0.95, 0.95));  // MAKE SURE THE INSIDE IS SMALLER THAN THE OUTSIDE
-    quartersphereinside.render();  // in this model, the normals are inverted
-
-	    //  now, draw a flattened hemisphere
-		//      Note that this could be done more elegantly using two sets of shaders
-		//         (one for the inside and one for the outside of the same hemisphere)
-    modelview = initialmodelview;
-    modelview = mult(modelview, translate(0.0, -15.0, -15.0));
-    modelview = mult(modelview, rotate(0.0, 1, 0, 0));
-    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.8, 0.2, 0.5));
-    hemisphereoutside.render();
-	modelview = mult(modelview, scale(0.95, 0.95, 0.95));  // MAKE SURE THE INSIDE IS SMALLER THAN THE OUTSIDE
-    hemisphereinside.render();  // in this model, the normals are inverted
-
-
-	}
+}
 
 
 
@@ -322,73 +320,51 @@ function getTextContent(elementID) {
 
 
 window.onload = function init() {
-    try {
-        var canvas = document.getElementById("glcanvas");
-        gl = canvas.getContext("webgl");
-        if (!gl) {
-            gl = canvas.getContext("experimental-webgl");
-        }
-        if (!gl) {
-            throw "Could not create WebGL context.";
-        }
-
-        // LOAD SHADER (standard texture mapping)
-        var vertexShaderSource = getTextContent("vshader");
-        var fragmentShaderSource = getTextContent("fshader");
-        prog = createProgram(gl, vertexShaderSource, fragmentShaderSource);
-
-        gl.useProgram(prog);
-
-        // locate variables for further use
-        CoordsLoc = gl.getAttribLocation(prog, "vcoords");
-        NormalLoc = gl.getAttribLocation(prog, "vnormal");
-        TexCoordLoc = gl.getAttribLocation(prog, "vtexcoord");
-
-        ModelviewLoc = gl.getUniformLocation(prog, "modelview");
-        ProjectionLoc = gl.getUniformLocation(prog, "projection");
-        NormalMatrixLoc = gl.getUniformLocation(prog, "normalMatrix");
-
-        gl.enableVertexAttribArray(CoordsLoc);
-        gl.enableVertexAttribArray(NormalLoc);
-        gl.enableVertexAttribArray(TexCoordLoc);
-
-        gl.enable(gl.DEPTH_TEST);
-
-        //  create a "rotator" monitoring mouse mouvement
-        rotator = new SimpleRotator(canvas, render);
-        //  set initial camera position at z=40, with an "up" vector aligned with y axis
-        //   (this defines the initial value of the modelview matrix )
-        rotator.setView([0, 0, 1], [0, 1, 0], 40);
-
-        // You can use basic models using the following lines
-
-        sphere = createModel(uvSphere(10.0, 25.0, 25.0));
-        cylinder = createModel(uvCylinder(10.0, 20.0, 25.0, false, false));
-        box = createModel(cube(10.0));
-
-		teapot = createModel(teapotModel);
-        disk = createModel(ring(5.0, 10.0, 25.0));
-        torus = createModel(uvTorus(15.0, 5.0, 25.0, 25.0));
-        cone = createModel(uvCone(10.0, 20.0, 25.0, true));
-
-		hemisphereinside = createModel(uvHemisphereInside(10.0, 25.0, 25.0));
-		hemisphereoutside = createModel(uvHemisphereOutside(10.0, 25.0, 25.0));
-        thindisk = createModel(ring(9.5, 10.0, 25.0));
-
-		quartersphereinside = createModel(uvQuartersphereInside(10.0, 25.0, 25.0));
-		quartersphereoutside = createModel(uvQuartersphereOutside(10.0, 25.0, 25.0));
-		
-        ambientProduct = mult(lightAmbient, materialAmbient);
-        diffuseProduct = mult(lightDiffuse, materialDiffuse);
-        specularProduct = mult(lightSpecular, materialSpecular);
+    var canvas = document.getElementById("glcanvas");
+    gl = canvas.getContext("webgl");
+    if (!gl) {
+        gl = canvas.getContext("experimental-webgl");
     }
-    catch (e) {
-        document.getElementById("message").innerHTML =
-             "Could not initialize WebGL: " + e;
-        return;
+    if (!gl) {
+       throw "Could not create WebGL context.";
     }
 
-    setInterval(render, 1000);
+    // LOAD SHADER (standard texture mapping)
+    var vertexShaderSource = getTextContent("vshader");
+    var fragmentShaderSource = getTextContent("fshader");
+    prog = createProgram(gl, vertexShaderSource, fragmentShaderSource);
+
+    gl.useProgram(prog);
+
+    // locate variables for further use
+    CoordsLoc = gl.getAttribLocation(prog, "vcoords");
+    NormalLoc = gl.getAttribLocation(prog, "vnormal");
+    TexCoordLoc = gl.getAttribLocation(prog, "vtexcoord");
+
+    ModelviewLoc = gl.getUniformLocation(prog, "modelview");
+    ProjectionLoc = gl.getUniformLocation(prog, "projection");
+    NormalMatrixLoc = gl.getUniformLocation(prog, "normalMatrix");
+
+    gl.enableVertexAttribArray(CoordsLoc);
+    gl.enableVertexAttribArray(NormalLoc);
+    gl.enableVertexAttribArray(TexCoordLoc);
+
+    gl.enable(gl.DEPTH_TEST);
+
+    //  create a "rotator" monitoring mouse mouvement
+    rotator = new SimpleRotator(canvas, render);
+    //  set initial camera position at z=40, with an "up" vector aligned with y axis
+    //   (this defines the initial value of the modelview matrix )
+    rotator.setView([0, 0, 1], [0, 1, 0], 40);
+
+    ambientProduct = mult(lightAmbient, materialAmbient);
+    diffuseProduct = mult(lightDiffuse, materialDiffuse);
+    specularProduct = mult(lightSpecular, materialSpecular);
+
+    box = createModel(cube(10.0));
+
+    for (var i = 0; i < numNodes; i++) initNodes(i);
+    render();
 }
 
 
