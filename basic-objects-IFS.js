@@ -66,6 +66,135 @@ function cube(side) {
 }
 
 /**
+ * Faire une aile
+ */
+
+function triangle(side)
+{
+   var s = (side || 1)/2;
+   var coords = [];
+   var normals = [];
+   var texCoords = [];
+   var indices = [];
+   function face(xyz, nrm) {
+      var start = coords.length/3;
+      var i;
+      for (i = 0; i < 9; i++) {
+         coords.push(xyz[i]);
+      }
+      for (i = 0; i < 3; i++) {
+         normals.push(nrm[0],nrm[1],nrm[2]);
+      }
+      texCoords.push(0,0,1,0,1,1);
+      indices.push(start,start+1,start+2);
+   }
+   face( [-s,-s,s, s,-s,s, s,s,s], [0,0,1] );
+
+   return {
+      vertexPositions: new Float32Array(coords),
+      vertexNormals: new Float32Array(normals),
+      vertexTextureCoords: new Float32Array(texCoords),
+      indices: new Uint16Array(indices)
+   }
+}
+
+function trapeze1(side) {
+   var s = (side || 1)/2;
+   var coords = [];
+   var normals = [];
+   var texCoords = [];
+   var indices = [];
+   function face(xyz, nrm) {
+      var start = coords.length/3;
+      var i;
+      for (i = 0; i < 12; i++) {
+         coords.push(xyz[i]);
+      }
+      for (i = 0; i < 4; i++) {
+         normals.push(nrm[0],nrm[1],nrm[2]);
+      }
+      texCoords.push(0,0,1,0,1,1,0,1);
+      indices.push(start,start+1,start+2,start,start+2,start+3);
+   }
+   face( [-s/4,-s,s/4, s,-s,s/4, s,s*2,s/4, -s,s*2,s/4], [0,0,1] ); //derriere
+   face( [-s/4,-s,-s/4, -s,s*2,-s/4, s,s*2,-s/4, s,-s,-s/4], [0,0,-1] ); //devant
+   face( [s,-s,-s/4, s,s*2,-s/4, s,s*2,s/4, s,-s,s/4], [1,0,0] ); //cote droit
+   face( [-s/4,-s,-s/4, s,-s,-s/4, s,-s,s/4, -s/4,-s,s/4], [0,-1,0] ); // dessus
+   face( [-s/4,-s,-s/4, -s,s*2,-s/4, -s,s*2,s/4, -s/4,-s,s/4], [1,0,0] ); // gauche
+   face( [-s,s*2,-s/4, -s,s*2,s/4, s,s*2,s/4, s,s*2,-s/4], [0,1,0] );
+   return {
+      vertexPositions: new Float32Array(coords),
+      vertexNormals: new Float32Array(normals),
+      vertexTextureCoords: new Float32Array(texCoords),
+      indices: new Uint16Array(indices)
+   }
+}
+
+function trapeze2(side) {
+   var s = (side || 1)/2;
+   var coords = [];
+   var normals = [];
+   var texCoords = [];
+   var indices = [];
+   function face(xyz, nrm) {
+      var start = coords.length/3;
+      var i;
+      for (i = 0; i < 12; i++) {
+         coords.push(xyz[i]);
+      }
+      for (i = 0; i < 4; i++) {
+         normals.push(nrm[0],nrm[1],nrm[2]);
+      }
+      texCoords.push(0,0,1,0,1,1,0,1);
+      indices.push(start,start+1,start+2,start,start+2,start+3);
+   }
+   face( [-s/2,-s,s/4, s/2,-s,s/4, s,s*2,s/4, -s,s*2,s/4], [0,0,1] ); //derriere
+   face( [-s/2,-s,-s/4, -s,s*2,-s/4, s,s*2,-s/4, s/2,-s,-s/4], [0,0,-1] ); //devant
+   face( [s/2,-s,-s/4, s,s*2,-s/4, s,s*2,s/4, s/2,-s,s/4], [1,0,0] ); //cote droit
+   face( [-s/2,-s,-s/4, s/2,-s,-s/4, s/2,-s,s/4, -s/2,-s,s/4], [0,-1,0] ); // dessus
+   face( [-s/2,-s,-s/4, -s,s*2,-s/4, -s,s*2,s/4, -s/2,-s,s/4], [1,0,0] ); // gauche
+   face( [-s,s*2,-s/4, -s,s*2,s/4, s,s*2,s/4, s,s*2,-s/4], [0,1,0] );
+   return {
+      vertexPositions: new Float32Array(coords),
+      vertexNormals: new Float32Array(normals),
+      vertexTextureCoords: new Float32Array(texCoords),
+      indices: new Uint16Array(indices)
+   }
+}
+
+function trapeze3(side) {
+   var s = (side || 1)/2;
+   var coords = [];
+   var normals = [];
+   var texCoords = [];
+   var indices = [];
+   function face(xyz, nrm) {
+      var start = coords.length/3;
+      var i;
+      for (i = 0; i < 12; i++) {
+         coords.push(xyz[i]);
+      }
+      for (i = 0; i < 4; i++) {
+         normals.push(nrm[0],nrm[1],nrm[2]);
+      }
+      texCoords.push(0,0,1,0,1,1,0,1);
+      indices.push(start,start+1,start+2,start,start+2,start+3);
+   }
+   face( [-s/2,-s,s/4, s/2,-s,s/4, s,s*2,s/4, -s,s*2,s/4], [0,0,1] ); // dessous
+   face( [-s/4,-s/1.3,-s/20, -s,s*2,-s/4, s,s*2,-s/4, s/4,-s/1.3,-s/20], [0,0,-1] ); //dessus
+   face( [s/4,-s/1.3, -s/20, s,s*2,-s/4, s,s*2,s/4, s/2,-s,s/4], [1,0,0] ); // derriere
+   face( [-s/4,-s/1.3,-s/20, s/4,-s/1.3,-s/20, s/2,-s,s/4, -s/2,-s,s/4], [0,-1,0] ); //guache
+   face( [-s/4,-s/1.3,-s/20, -s,s*2,-s/4, -s,s*2,s/4, -s/2,-s,s/4], [1,0,0] ); // devant
+   face( [-s,s*2,-s/4, -s,s*2,s/4, s,s*2,s/4, s,s*2,-s/4], [0,1,0] ); //droite
+   return {
+      vertexPositions: new Float32Array(coords),
+      vertexNormals: new Float32Array(normals),
+      vertexTextureCoords: new Float32Array(texCoords),
+      indices: new Uint16Array(indices)
+   }
+}
+
+/**
  * Creates a modle of an annulus or disk lying in the xy plane,
  * centered at the origin.  (This is not a great representation,
  * since all the normals are the same.)
