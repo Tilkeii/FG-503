@@ -39,7 +39,7 @@ var reacteurWidth = 4;
 var avantVaisseauHeight = 1;
 var avantVaisseauWidth = 6;*/
 
-var numNodes = 8;
+var numNodes = 9;
 
 var projection;   //--- projection matrix
 var modelview;    // modelview matrix
@@ -49,7 +49,7 @@ var normalMatrix = mat3();  //--- create a 3X3 matrix that will affect normals
 
 var rotator;   // A SimpleRotator object to enable rotation by mouse dragging.
 
-var cube, trapeze1, trapeze2, trapeze3, cylindre;
+var cube, trapeze1, trapeze2, trapeze3, cylindre, triangle, cylindreNoBottom;
 
 var prog;  // shader program identifier
 
@@ -98,8 +98,8 @@ function initNodes(Id) {
     switch (Id) {
 
         case carlingueId:
-
-            //m = rotate(theta[carlingueId], 0, 1, 0);
+            m = rotate(-40, 0, 1, 0);
+            m = mult(m, rotate(40, 1, 0, 0));
             figure[carlingueId] = createNode(m, carlingue, null, preAileDroitId);
             break;
 
@@ -146,32 +146,139 @@ function carlingue() {
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(2.5, 0.5, 0.5));
     cube.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(13, 0, 0));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(2, 2, 0.3));
+    cylindreNoBottom.render();
+
+    for (var i = 0; i < 15; i++) {
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(14.0, 0, 0.0));
+        modelview = mult(modelview, rotate(i*15, 1, 0, 0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(0.1, 0.4, 0.02));
+        cube.render();
+    }
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(13.5, 3.3, 0));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.5, 0.25, 0.2));
+    triangle.render();
 }
 
 function preAileDroit() {
     modelview = initialmodelview;
-    modelview = mult(modelview, translate(0.0, -1.2, 4.5));
+    modelview = mult(modelview, translate(1.5, -1.2, 4.5));
     modelview = mult(modelview, rotate(270, 1, 0, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(2.5, 0.2, 1));
+    modelview = mult(modelview, scale(2.7, 0.2, 1));
     trapeze1.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(16, -1.2, 4));
+    modelview = mult(modelview, rotate(180, 1, 0, 0));
+    modelview = mult(modelview, rotate(90, 0, 0, 1));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.25, 0.1, 1.2));
+    trapeze2.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(13, 1, 2.45));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.28, 0.25, 0.01));
+    cube.render();
 }
 
 function preAileGauche() {
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(1.5, -1.2, -4.5));
+    modelview = mult(modelview, rotate(90, 1, 0, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(2.7, 0.2, 1));
+    trapeze1.render();
 
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(16, -1.2, -4));
+    modelview = mult(modelview, rotate(180, 1, 0, 0));
+    modelview = mult(modelview, rotate(90, 0, 0, 1));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.25, 0.1, 1.2));
+    trapeze2.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(13, 1, -2.45));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.28, 0.25, 0.01));
+    cube.render();
 }
 
 function avantVaisseau() {
     modelview = initialmodelview;
-    modelview = mult(modelview, translate(-27, 0.0, 0));
+    modelview = mult(modelview, translate(-25.5, 0.0, 0));
     modelview = mult(modelview, rotate(90, 1, 0, 0));
     modelview = mult(modelview, rotate(270, 0, 0, 1));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 1.5, 2));
+    modelview = mult(modelview, scale(0.5, 1.3, 2.0));
     trapeze3.render();
 }
 
 function cockpit() {
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(-6, 4, 0));
+    //modelview = mult(modelview, rotate(90, 1, 0, 0));
+    modelview = mult(modelview, rotate(270, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    //modelview = mult(modelview, scale(1.2, 0.3, 0.4));
+    modelview = mult(modelview, scale(0.5, 0.3, 1.2));
+    triangle.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(3, 4, 0));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    modelview = mult(modelview, rotate(0, 1, 0, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.5, 0.3, 0.6));
+    triangle.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(7, 3, 0));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.5, 0.3, 1.1));
+    cube.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(7, 5, 0));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.1, 0.2, 0.6));
+    cube.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(7, 6, 0));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.5, 0.5, 0.8));
+    cylindre.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(0, 6, 0));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.3, 0.3, 0.7));
+    cylindre.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(-7, 6, 0));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.2, 0.2, 0.7));
+    cylindre.render();
 
 }
 
@@ -190,23 +297,89 @@ function aileDroit() {
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.75, 0.4, 0.2));
     trapeze2.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(0, -2, 18));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.3, 0.3, 0.6));
+    cylindre.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(-6, -2, 18));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.2, 0.2, 0.6));
+    cylindre.render();
 }
 
 function aileGauche() {
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(4, -2, -13));
+    modelview = mult(modelview, rotate(90, 1, 0, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(1.2, 0.8, 0.2));
+    trapeze1.render();
 
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(6.25, -2, -21));
+    modelview = mult(modelview, rotate(90, 1, 0, 0));
+    modelview = mult(modelview, rotate(180, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.75, 0.4, 0.2));
+    trapeze2.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(0, -2, -18));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.3, 0.3, 0.6));
+    cylindre.render();
+
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(-6, -2, -18));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.2, 0.2, 0.6));
+    cylindre.render();
 }
 
 function reacteurDroit() {
     modelview = initialmodelview;
     modelview = mult(modelview, translate(5, -3.5, 15));
-    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    modelview = mult(modelview, rotate(270, 0, 1, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(1.2, 1.2, 1.5));
-    cylindre.render();
+    cylindreNoBottom.render();
+
+    for (var i = 0; i < 10; i++) {
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(-1.5, -3.5, 15.0));
+        modelview = mult(modelview, rotate(i*20, 1, 0, 0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(0.1, 0.2, 0.01));
+        cube.render();
+    }
 }
 
 function reacteurGauche() {
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(5, -3.5, -15));
+    modelview = mult(modelview, rotate(270, 0, 1, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(1.2, 1.2, 1.5));
+    cylindreNoBottom.render();
 
+    for (var i = 0; i < 10; i++) {
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(-1.5, -3.5, -15.0));
+        modelview = mult(modelview, rotate(i*20, 1, 0, 0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(0.1, 0.2, 0.01));
+        cube.render();
+    }
+
+    //for (var i = 10;)
 }
 
 function traverse(Id) {
@@ -331,8 +504,8 @@ function createModel(modelData) {
     gl.bindBuffer(gl.ARRAY_BUFFER, model.textureBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, modelData.vertexTextureCoords, gl.STATIC_DRAW);
 
-    console.log(modelData.vertexPositions.length);
-    console.log(modelData.indices.length);
+    //console.log(modelData.vertexPositions.length);
+    //console.log(modelData.indices.length);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, modelData.indices, gl.STATIC_DRAW);
@@ -351,7 +524,7 @@ function createModel(modelData) {
         gl.uniformMatrix3fv(NormalMatrixLoc, false, flatten(normalMatrix));  //--- load flattened normal matrix
 
         gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_SHORT, 0);
-        console.log(this.count);
+        //console.log(this.count);
     };
     return model;
 }
@@ -443,6 +616,8 @@ window.onload = function init() {
     trapeze2 = createModel(trapeze2(10));
     trapeze3 = createModel(trapeze3(10));
     cylindre = createModel(uvCylinder(1, 10, 32, false, false));
+    cylindreNoBottom = createModel(uvCylinder(1, 10, 32, true, false));
+    triangle = createModel(triangle(10));
 
     for (var i = 0; i < numNodes; i++) initNodes(i);
     render();
