@@ -18,6 +18,7 @@ var ModelviewLoc;
 var NormalMatrixLoc;
 var initialmodelview;
 
+// Id des differents composants
 var carlingueId = 0;
 var preAileDroitId = 1;
 var aileDroitId = 2;
@@ -49,11 +50,11 @@ var normalMatrix = mat3();  //--- create a 3X3 matrix that will affect normals
 
 var rotator;   // A SimpleRotator object to enable rotation by mouse dragging.
 
-var cube, trapeze1, trapeze2, trapeze3, cylindre, triangle, cylindreNoBottom;
+var cube, trapeze1, trapeze2, trapeze3, cylindre, triangle, cylindreNoBottom, cylinderQuart;
 
 var prog;  // shader program identifier
 
-var lightPosition = vec4(20.0, 20.0, 100.0, 1.0);
+var lightPosition = vec4(50.0, 20.0, 100.0, 1.0);
 
 var lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
@@ -61,22 +62,14 @@ var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
 var materialAmbient = vec4(0.0, 0.1, 0.3, 1.0);
 var materialDiffuse = vec4(0.48, 0.55, 0.69, 1.0);
-var materialSpecular = vec4(0.48, 0.55, 0.69, 1.0);
+var materialSpecular = vec4(0.8, 0.8, 0.8, 1.0);
 var materialShininess = 100.0;
 
 var figure = [];
 
-var theta = [0, 0, 0, 0, 0, 0, 0, 0];
-
 var ambientProduct, diffuseProduct, specularProduct;
 
-function scale4(a, b, c) {
-    var result = mat4();
-    result[0][0] = a;
-    result[1][1] = b;
-    result[2][2] = c;
-    return result;
-}
+// Function pour la creation d'un noeud
 
 function createNode(transform, render, sibling, child) {
     var node = {
@@ -88,6 +81,26 @@ function createNode(transform, render, sibling, child) {
     return node;
 }
 
+// Fonction pour mettre de la couleur
+
+function setColor(a, b, c, d, e ,f , g ,h, i)
+{
+    ambientProduct = mult(lightAmbient, vec4(a,b,c,1));
+    diffuseProduct = mult(lightDiffuse, vec4(d,e,f,1));
+    specularProduct = mult(lightSpecular, vec4(g,h,i,1));
+    gl.uniform4fv(gl.getUniformLocation(prog, "ambientProduct"), flatten(ambientProduct));
+    gl.uniform4fv(gl.getUniformLocation(prog, "diffuseProduct"), flatten(diffuseProduct));
+    gl.uniform4fv(gl.getUniformLocation(prog, "specularProduct"), flatten(specularProduct));
+}
+
+// Fonction pour restaurer la couleur à la couleur de base utilisé pour le vaisseau
+
+function resetColor() {
+    setColor(0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.5);
+}
+
+// Initialise les noeauds de notre arbre
+
 function initNodes(Id) {
 
     var m = mat4(1, 0, 0, 0,
@@ -98,8 +111,9 @@ function initNodes(Id) {
     switch (Id) {
 
         case carlingueId:
-            m = rotate(-40, 0, 1, 0);
-            m = mult(m, rotate(40, 1, 0, 0));
+            m = rotate(70, 0, 1, 0);
+            m = mult(m, rotate(45, 1, 0, 0));
+            m = mult(m, rotate(10, 0, 0, 1));
             figure[carlingueId] = createNode(m, carlingue, null, preAileDroitId);
             break;
 
@@ -136,10 +150,12 @@ function initNodes(Id) {
             break;
 
     }
-
 }
 
+// Fonction permettant la construction de la Carlingue et de son moteur arriere
+
 function carlingue() {
+    setColor(0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.5);
     modelview = initialmodelview;
     //modelview = mult(modelview, translate(0.0, 0.0, 0.0));
     modelview = mult(modelview, rotate(270, 1, 0, 0));
@@ -154,14 +170,16 @@ function carlingue() {
     modelview = mult(modelview, scale(2, 2, 0.3));
     cylindreNoBottom.render();
 
+    setColor(0.1,0.1,0.1,0,0,0,0,0,0);
     for (var i = 0; i < 15; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(14.0, 0, 0.0));
         modelview = mult(modelview, rotate(i*15, 1, 0, 0));
         normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-        modelview = mult(modelview, scale(0.1, 0.4, 0.02));
+        modelview = mult(modelview, scale(0.1, 0.39, 0.02));
         cube.render();
     }
+    resetColor();
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(13.5, 3.3, 0));
@@ -170,6 +188,8 @@ function carlingue() {
     modelview = mult(modelview, scale(0.5, 0.25, 0.2));
     triangle.render();
 }
+
+// Fonction permettant la construction du composant entre l'aile et la carlingue
 
 function preAileDroit() {
     modelview = initialmodelview;
@@ -192,6 +212,16 @@ function preAileDroit() {
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.28, 0.25, 0.01));
     cube.render();
+
+    setColor(0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1);
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(5, -3.5, 4));
+    modelview = mult(modelview, rotate(270, 0, 1, 0));
+    modelview = mult(modelview, rotate(25, 0, 0, 1));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(1, 1, 1));
+    cylinderQuart.render();
+    resetColor();
 }
 
 function preAileGauche() {
@@ -215,7 +245,19 @@ function preAileGauche() {
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.28, 0.25, 0.01));
     cube.render();
+
+    setColor(0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1);
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(5, -3.5, -4));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    modelview = mult(modelview, rotate(25, 0, 0, 1));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(1, 1, 1));
+    cylinderQuart.render();
+    resetColor();
 }
+
+// Fonction permettant la construction de l'avant du vaisseau
 
 function avantVaisseau() {
     modelview = initialmodelview;
@@ -227,13 +269,14 @@ function avantVaisseau() {
     trapeze3.render();
 }
 
+// Fonction permettant la construction du Cockpit et de l'antenne au dessus
+
 function cockpit() {
+    setColor(0.1,0.1,0.1,0,0,0,0,0,0);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(-6, 4, 0));
-    //modelview = mult(modelview, rotate(90, 1, 0, 0));
     modelview = mult(modelview, rotate(270, 0, 1, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    //modelview = mult(modelview, scale(1.2, 0.3, 0.4));
     modelview = mult(modelview, scale(0.5, 0.3, 1.2));
     triangle.render();
 
@@ -245,11 +288,13 @@ function cockpit() {
     modelview = mult(modelview, scale(0.5, 0.3, 0.6));
     triangle.render();
 
+    resetColor();
+
     modelview = initialmodelview;
     modelview = mult(modelview, translate(7, 3, 0));
     modelview = mult(modelview, rotate(90, 0, 1, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
-    modelview = mult(modelview, scale(0.5, 0.3, 1.1));
+    modelview = mult(modelview, scale(0.501, 0.3, 1.1));
     cube.render();
 
     modelview = initialmodelview;
@@ -281,6 +326,8 @@ function cockpit() {
     cylindre.render();
 
 }
+
+// Construction de l'aile Droit et de l'antenne sur celle ci
 
 function aileDroit() {
     modelview = initialmodelview;
@@ -314,6 +361,7 @@ function aileDroit() {
 }
 
 function aileGauche() {
+
     modelview = initialmodelview;
     modelview = mult(modelview, translate(4, -2, -13));
     modelview = mult(modelview, rotate(90, 1, 0, 0));
@@ -344,6 +392,8 @@ function aileGauche() {
     cylindre.render();
 }
 
+// Construction du reacteur droit
+
 function reacteurDroit() {
     modelview = initialmodelview;
     modelview = mult(modelview, translate(5, -3.5, 15));
@@ -352,6 +402,7 @@ function reacteurDroit() {
     modelview = mult(modelview, scale(1.2, 1.2, 1.5));
     cylindreNoBottom.render();
 
+    setColor(0.1,0.1,0.1,0,0,0,0,0,0);
     for (var i = 0; i < 10; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(-1.5, -3.5, 15.0));
@@ -360,6 +411,7 @@ function reacteurDroit() {
         modelview = mult(modelview, scale(0.1, 0.2, 0.01));
         cube.render();
     }
+    resetColor()
 }
 
 function reacteurGauche() {
@@ -370,6 +422,7 @@ function reacteurGauche() {
     modelview = mult(modelview, scale(1.2, 1.2, 1.5));
     cylindreNoBottom.render();
 
+    setColor(0.1,0.1,0.1,0,0,0,0,0,0);
     for (var i = 0; i < 10; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(-1.5, -3.5, -15.0));
@@ -378,8 +431,7 @@ function reacteurGauche() {
         modelview = mult(modelview, scale(0.1, 0.2, 0.01));
         cube.render();
     }
-
-    //for (var i = 10;)
+    resetColor();
 }
 
 function traverse(Id) {
@@ -611,6 +663,8 @@ window.onload = function init() {
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
     specularProduct = mult(lightSpecular, materialSpecular);
 
+    // Permet la création des modèles : Modèles initialisés dans basic-objects-IFS
+
     cube = createModel(cube(10));
     trapeze1 = createModel(trapeze1(10));
     trapeze2 = createModel(trapeze2(10));
@@ -618,6 +672,7 @@ window.onload = function init() {
     cylindre = createModel(uvCylinder(1, 10, 32, false, false));
     cylindreNoBottom = createModel(uvCylinder(1, 10, 32, true, false));
     triangle = createModel(triangle(10));
+    cylinderQuart = createModel(cylinderQuart(4, 1.5, 32));
 
     for (var i = 0; i < numNodes; i++) initNodes(i);
     render();

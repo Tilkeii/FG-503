@@ -65,13 +65,13 @@
     
           vec3 H = normalize( fL + fE );
           vec4 ambient = ambientProduct;
- 
+
           float factorLN = max( dot(fL, fN), 0.0 );
           vec4  diffuse = factorLN*diffuseProduct;
 
           float factorNH = pow( max(dot(fN, H), 0.0), shininess );
           vec4  specular = factorNH * specularProduct;
-    
+
           if( dot(fL, fN) < 0.0 )
               specular = vec4(0.0, 0.0, 0.0, 1.0);
 

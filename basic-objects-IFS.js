@@ -66,9 +66,14 @@ function cube(side) {
 }
 
 /**
- * Custom shape
+ * Forme personalisée
  */
 
+/**
+ * Creation d'un triangle
+ * @param side
+ * @returns {{vertexPositions: Float32Array, vertexNormals: Float32Array, vertexTextureCoords: Float32Array, indices: Uint16Array}}
+ */
 function triangle(side)
 {
    var s = (side || 1)/2;
@@ -101,37 +106,11 @@ function triangle(side)
    }
 }
 
-/*function triangle_cockpit(side) {
-   var s = (side || 1)/2;
-   var coords = [];
-   var normals = [];
-   var texCoords = [];
-   var indices = [];
-   function face(xyz, nrm) {
-      var start = coords.length/3;
-      var i;
-      for (i = 0; i < 12; i++) {
-         coords.push(xyz[i]);
-      }
-      for (i = 0; i < 4; i++) {
-         normals.push(nrm[0],nrm[1],nrm[2]);
-      }
-      texCoords.push(0,0,1,0,1,1,0,1);
-      indices.push(start,start+1,start+2,start,start+2,start+3);
-   }
-   face( [-s,-s,s, s,-s,s*1.3, s,s,s, s,s,s], [0,0,1] );
-   face( [-s,-s,-s, s,s,-s, s,s,-s, s,-s,-s*1.3], [0,0,-1] );
-   face( [-s,-s,-s, -s,-s,s, s,s,s, s,s,-s], [0,1,0] );
-   face( [-s,-s,-s, s,-s,-s*1.3, s,-s,s*1.3, -s,-s,s], [0,-1,0] );
-   face( [s,-s,-s*1.3, s,s,-s, s,s,s, s,-s,s*1.3], [1,0,0] );
-   return {
-      vertexPositions: new Float32Array(coords),
-      vertexNormals: new Float32Array(normals),
-      vertexTextureCoords: new Float32Array(texCoords),
-      indices: new Uint16Array(indices)
-   }
-}*/
-
+/**
+ * Creation d'un trapeze
+ * @param side
+ * @returns {{vertexPositions: Float32Array, vertexNormals: Float32Array, vertexTextureCoords: Float32Array, indices: Uint16Array}}
+ */
 function trapeze1(side) {
    var s = (side || 1)/2;
    var coords = [];
@@ -154,7 +133,7 @@ function trapeze1(side) {
    face( [-s/4,-s,-s/4, -s,s*2,-s/4, s,s*2,-s/4, s,-s,-s/4], [0,0,-1] ); //devant
    face( [s,-s,-s/4, s,s*2,-s/4, s,s*2,s/4, s,-s,s/4], [1,0,0] ); //cote droit
    face( [-s/4,-s,-s/4, s,-s,-s/4, s,-s,s/4, -s/4,-s,s/4], [0,-1,0] ); // dessus
-   face( [-s/4,-s,-s/4, -s,s*2,-s/4, -s,s*2,s/4, -s/4,-s,s/4], [1,0,0] ); // gauche
+   face( [-s/4,-s,-s/4, -s,s*2,-s/4, -s,s*2,s/4, -s/4,-s,s/4], [0,-1,0] ); // gauche
    face( [-s,s*2,-s/4, -s,s*2,s/4, s,s*2,s/4, s,s*2,-s/4], [0,1,0] );
    return {
       vertexPositions: new Float32Array(coords),
@@ -164,6 +143,11 @@ function trapeze1(side) {
    }
 }
 
+/**
+ * Creation d'un trapeze
+ * @param side
+ * @returns {{vertexPositions: Float32Array, vertexNormals: Float32Array, vertexTextureCoords: Float32Array, indices: Uint16Array}}
+ */
 function trapeze2(side) {
    var s = (side || 1)/2;
    var coords = [];
@@ -184,9 +168,9 @@ function trapeze2(side) {
    }
    face( [-s/2,-s,s/4, s/2,-s,s/4, s,s*2,s/4, -s,s*2,s/4], [0,0,1] ); //derriere
    face( [-s/2,-s,-s/4, -s,s*2,-s/4, s,s*2,-s/4, s/2,-s,-s/4], [0,0,-1] ); //devant
-   face( [s/2,-s,-s/4, s,s*2,-s/4, s,s*2,s/4, s/2,-s,s/4], [1,0,0] ); //cote droit
+   face( [s/2,-s,-s/4, s,s*2,-s/4, s,s*2,s/4, s/2,-s,s/4], [0,-1,0] ); //cote droit
    face( [-s/2,-s,-s/4, s/2,-s,-s/4, s/2,-s,s/4, -s/2,-s,s/4], [0,-1,0] ); // dessus
-   face( [-s/2,-s,-s/4, -s,s*2,-s/4, -s,s*2,s/4, -s/2,-s,s/4], [1,0,0] ); // gauche
+   face( [-s/2,-s,-s/4, -s,s*2,-s/4, -s,s*2,s/4, -s/2,-s,s/4], [-1,0,0] ); // gauche
    face( [-s,s*2,-s/4, -s,s*2,s/4, s,s*2,s/4, s,s*2,-s/4], [0,1,0] );
    return {
       vertexPositions: new Float32Array(coords),
@@ -196,6 +180,11 @@ function trapeze2(side) {
    }
 }
 
+/**
+ * Creation d'un trapeze
+ * @param side
+ * @returns {{vertexPositions: Float32Array, vertexNormals: Float32Array, vertexTextureCoords: Float32Array, indices: Uint16Array}}
+ */
 function trapeze3(side) {
    var s = (side || 1)/2;
    var coords = [];
@@ -218,7 +207,7 @@ function trapeze3(side) {
    face( [-s/4,-s/1.3,-s/20, -s,s*2,-s/4, s,s*2,-s/4, s/4,-s/1.3,-s/20], [0,0,-1] ); //dessus
    face( [s/4,-s/1.3, -s/20, s,s*2,-s/4, s,s*2,s/4, s/2,-s,s/4], [1,0,0] ); // derriere
    face( [-s/4,-s/1.3,-s/20, s/4,-s/1.3,-s/20, s/2,-s,s/4, -s/2,-s,s/4], [0,-1,0] ); //guache
-   face( [-s/4,-s/1.3,-s/20, -s,s*2,-s/4, -s,s*2,s/4, -s/2,-s,s/4], [1,0,0] ); // devant
+   face( [-s/4,-s/1.3,-s/20, -s,s*2,-s/4, -s,s*2,s/4, -s/2,-s,s/4], [-1,0,0] ); // devant
    face( [-s,s*2,-s/4, -s,s*2,s/4, s,s*2,s/4, s,s*2,-s/4], [0,1,0] ); //droite
    return {
       vertexPositions: new Float32Array(coords),
@@ -226,6 +215,66 @@ function trapeze3(side) {
       vertexTextureCoords: new Float32Array(texCoords),
       indices: new Uint16Array(indices)
    }
+}
+
+/**
+ * Creation d'un quart de cylindre
+ * @param radius
+ * @param height
+ * @param slices
+ * @returns {{vertexPositions: Float32Array, vertexNormals: Float32Array, vertexTextureCoords: Float32Array, indices: Uint16Array}}
+ */
+function cylinderQuart(radius, height, slices) {
+   radius = radius || 0.5;
+   height = height || 2*radius;
+   slices = slices || 32;
+   var vertexCount = 2*(slices+1);
+   var triangleCount = 2*slices;
+   var vertices = new Float32Array(vertexCount*3);
+   var normals = new Float32Array(vertexCount*3);
+   var texCoords = new Float32Array(vertexCount*2);
+   var indices = new Uint16Array(triangleCount*3);
+   var du = (Math.PI/4) / slices;
+   var kv = 0;
+   var kt = 0;
+   var k = 0;
+   var i,u;
+   for (i = 0; i <= slices; i++) {
+      u = i*du;
+      var c = Math.cos(u);
+      var s = Math.sin(u);
+      vertices[kv] = c*radius;
+      normals[kv++] = c;
+      vertices[kv] = s*radius;
+      normals[kv++] = s;
+      vertices[kv] = -height/2;
+      normals[kv++] = 0;
+      texCoords[kt++] = i/slices;
+      texCoords[kt++] = 0;
+      vertices[kv] = c*radius;
+      normals[kv++] = c;
+      vertices[kv] = s*radius;
+      normals[kv++] = s;
+      vertices[kv] = height/2;
+      normals[kv++] = 0;
+      texCoords[kt++] = i/slices;
+      texCoords[kt++] = 1;
+   }
+   for (i = 0; i < slices; i++) {
+      indices[k++] = 2*i;
+      indices[k++] = 2*i+3;
+      indices[k++] = 2*i+1;
+      indices[k++] = 2*i;
+      indices[k++] = 2*i+2;
+      indices[k++] = 2*i+3;
+   }
+
+   return {
+      vertexPositions: vertices,
+      vertexNormals: normals,
+      vertexTextureCoords: texCoords,
+      indices: indices
+   };
 }
 
 /**
