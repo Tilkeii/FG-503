@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -54,6 +54,7 @@
      uniform vec4 diffuseProduct;
      uniform vec4 specularProduct;
      uniform float shininess;
+     uniform bool phong;
 
      varying vec3 fN, fL, fE;
      varying vec3 fviewCoords;
@@ -63,20 +64,27 @@
 
           vec4 Color;
     
-          vec3 H = normalize( fL + fE );
           vec4 ambient = ambientProduct;
 
-          float factorLN = max( dot(fL, fN), 0.0 );
-          vec4  diffuse = factorLN*diffuseProduct;
+          if(phong){
+          
+            vec3 H = normalize( fL + fE );
+            
+            float factorLN = max( dot(fL, fN), 0.0 );
+            vec4  diffuse = factorLN*diffuseProduct;
 
-          float factorNH = pow( max(dot(fN, H), 0.0), shininess );
-          vec4  specular = factorNH * specularProduct;
+            float factorNH = pow( max(dot(fN, H), 0.0), shininess );
+            vec4  specular = factorNH * specularProduct;
 
-          if( dot(fL, fN) < 0.0 )
-              specular = vec4(0.0, 0.0, 0.0, 1.0);
+            if( dot(fL, fN) < 0.0 )
+            specular = vec4(0.0, 0.0, 0.0, 1.0);
 
-          Color = ambient + diffuse + specular;
-          Color.a = 1.0;
+            Color = ambient + diffuse + specular;
+            Color.a = 1.0;
+          }
+          else {
+            Color = ambient;
+          }
 
           gl_FragColor = Color;
      }

@@ -65,6 +65,8 @@ var materialDiffuse = vec4(0.48, 0.55, 0.69, 1.0);
 var materialSpecular = vec4(0.8, 0.8, 0.8, 1.0);
 var materialShininess = 100.0;
 
+var phong = 1;
+
 var figure = [];
 
 var ambientProduct, diffuseProduct, specularProduct;
@@ -97,6 +99,20 @@ function setColor(a, b, c, d, e ,f , g ,h, i)
 
 function resetColor() {
     setColor(0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.5);
+}
+
+
+function changePhong() {
+    if (phong) {
+        phong = 0;
+        gl.uniform1i(gl.getUniformLocation(prog, "phong"), phong);
+    }
+    else {
+        phong = 1;
+        gl.uniform1i(gl.getUniformLocation(prog, "phong"), phong);
+    }
+
+    return phong;
 }
 
 // Initialise les noeauds de notre arbre
@@ -170,6 +186,7 @@ function carlingue() {
     modelview = mult(modelview, scale(2, 2, 0.3));
     cylindreNoBottom.render();
 
+    changePhong(); // Desactive phong
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
     for (var i = 0; i < 15; i++) {
         modelview = initialmodelview;
@@ -180,6 +197,7 @@ function carlingue() {
         cube.render();
     }
     resetColor();
+    changePhong(); // Reactive phong
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(13.5, 3.3, 0));
@@ -272,6 +290,8 @@ function avantVaisseau() {
 // Fonction permettant la construction du Cockpit et de l'antenne au dessus
 
 function cockpit() {
+
+    changePhong();
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(-6, 4, 0));
@@ -289,6 +309,7 @@ function cockpit() {
     triangle.render();
 
     resetColor();
+    changePhong();
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(7, 3, 0));
@@ -402,6 +423,7 @@ function reacteurDroit() {
     modelview = mult(modelview, scale(1.2, 1.2, 1.5));
     cylindreNoBottom.render();
 
+    changePhong();
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
     for (var i = 0; i < 10; i++) {
         modelview = initialmodelview;
@@ -411,7 +433,8 @@ function reacteurDroit() {
         modelview = mult(modelview, scale(0.1, 0.2, 0.01));
         cube.render();
     }
-    resetColor()
+    resetColor();
+    changePhong();
 }
 
 function reacteurGauche() {
@@ -422,6 +445,7 @@ function reacteurGauche() {
     modelview = mult(modelview, scale(1.2, 1.2, 1.5));
     cylindreNoBottom.render();
 
+    changePhong();
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
     for (var i = 0; i < 10; i++) {
         modelview = initialmodelview;
@@ -432,6 +456,7 @@ function reacteurGauche() {
         cube.render();
     }
     resetColor();
+    changePhong();
 }
 
 function traverse(Id) {
@@ -652,6 +677,8 @@ window.onload = function init() {
     gl.enableVertexAttribArray(TexCoordLoc);
 
     gl.enable(gl.DEPTH_TEST);
+
+    gl.uniform1i(gl.getUniformLocation(prog, "phong"), 1); //init phong
 
     //  create a "rotator" monitoring mouse mouvement
     rotator = new SimpleRotator(canvas, render);
