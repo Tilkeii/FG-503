@@ -65,11 +65,51 @@ var materialDiffuse = vec4(0.48, 0.55, 0.69, 1.0);
 var materialSpecular = vec4(0.8, 0.8, 0.8, 1.0);
 var materialShininess = 100.0;
 
-var phong = 1;
+var phong = 1; var activateTex = 0;
 
 var figure = [];
 
 var ambientProduct, diffuseProduct, specularProduct;
+
+var ntextures_loaded = 0;
+var ntextures_tobeloaded = 0;
+
+var textureTest;
+
+function callTexture(name) {
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, name);
+    // Send texture to sampler
+    gl.uniform1i(gl.getUniformLocation(prog, "texture"), 0);
+}
+
+function handleLoadedTexture(texture) {
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    
+    ntextures_loaded++;
+
+    render();  // Call render function when the image has been loaded (to insure the model is displayed)
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+function initTexture() {
+    // define first texture
+    textureTest = gl.createTexture();
+
+    textureTest.image = new Image();
+    textureTest.image.onload = function () {
+        handleLoadedTexture(textureTest)
+    }
+
+    textureTest.image.src = "SA2011_black.gif";
+    ntextures_tobeloaded++;
+}
+
 
 // Function pour la creation d'un noeud
 
@@ -101,6 +141,19 @@ function resetColor() {
     setColor(0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.5);
 }
 
+
+function changeActivateTex() {
+    if (activateTex) {
+        activateTex = 0;
+        gl.uniform1i(gl.getUniformLocation(prog, "activateTex"), activateTex);
+    }
+    else {
+        activateTex = 1;
+        gl.uniform1i(gl.getUniformLocation(prog, "activateTex"), activateTex);
+    }
+
+    return activateTex;
+}
 
 function changePhong() {
     if (phong) {
@@ -278,6 +331,9 @@ function preAileGauche() {
 // Fonction permettant la construction de l'avant du vaisseau
 
 function avantVaisseau() {
+
+    changeActivateTex();
+    callTexture(textureTest);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(-25.5, 0.0, 0));
     modelview = mult(modelview, rotate(90, 1, 0, 0));
@@ -285,6 +341,7 @@ function avantVaisseau() {
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.5, 1.3, 2.0));
     trapeze3.render();
+    changeActivateTex();
 }
 
 // Fonction permettant la construction du Cockpit et de l'antenne au dessus
@@ -499,7 +556,10 @@ function render() {
     gl.enableVertexAttribArray(NormalLoc);
     gl.disableVertexAttribArray(TexCoordLoc);  // we do not need texture coordinates
 
-    traverse(carlingueId);
+
+    if (ntextures_loaded == ntextures_tobeloaded) {
+        traverse(carlingueId);
+    }
     //requestAnimFrame(render);
 
 }
@@ -572,6 +632,7 @@ function createModel(modelData) {
     model.normalBuffer = gl.createBuffer();
     model.textureBuffer = gl.createBuffer();
     model.indexBuffer = gl.createBuffer();
+
     model.count = modelData.indices.length;
 
     gl.bindBuffer(gl.ARRAY_BUFFER, model.coordsBuffer);
@@ -674,11 +735,12 @@ window.onload = function init() {
 
     gl.enableVertexAttribArray(CoordsLoc);
     gl.enableVertexAttribArray(NormalLoc);
-    gl.enableVertexAttribArray(TexCoordLoc);
+    gl.disableVertexAttribArray(TexCoordLoc);
 
     gl.enable(gl.DEPTH_TEST);
 
     gl.uniform1i(gl.getUniformLocation(prog, "phong"), 1); //init phong
+    gl.uniform1i(gl.getUniformLocation(prog, "activateTex"), 0); //init phong
 
     //  create a "rotator" monitoring mouse mouvement
     rotator = new SimpleRotator(canvas, render);
@@ -702,6 +764,10 @@ window.onload = function init() {
     cylinderQuart = createModel(cylinderQuart(4, 1.5, 32));
 
     for (var i = 0; i < numNodes; i++) initNodes(i);
+
+    //Initialize texture
+    initTexture();
+
     render();
 };
 
