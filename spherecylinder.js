@@ -752,6 +752,9 @@ window.onload = function init() {
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
     specularProduct = mult(lightSpecular, materialSpecular);
 
+    //Initialize texture
+    initTexture();
+
     // Permet la création des modèles : Modèles initialisés dans basic-objects-IFS
 
     cube = createModel(cube(10));
@@ -764,9 +767,6 @@ window.onload = function init() {
     cylinderQuart = createModel(cylinderQuart(4, 1.5, 32));
 
     for (var i = 0; i < numNodes; i++) initNodes(i);
-
-    //Initialize texture
-    initTexture();
 
     render();
 };
