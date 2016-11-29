@@ -103,10 +103,17 @@ function initTexture() {
 
     textureTest.image = new Image();
     textureTest.image.onload = function () {
+<<<<<<< HEAD
         handleLoadedTexture(textureTest);
     }
 
     textureTest.image.src = "textFleur.jpg";
+=======
+        handleLoadedTexture(textureTest)
+    }
+
+    textureTest.image.src = "SA2011_black.gif";
+>>>>>>> d751f3ac0577020fa2e54519ac0d89e2e22b3aea
     ntextures_tobeloaded++;
 }
 
