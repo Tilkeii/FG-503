@@ -89,10 +89,12 @@
             Color = ambient;
           }
 
-          if(activateTex)
-             gl_FragColor = Color * texture2D(texture, fTexCoord);
-          else 
+          if(activateTex){
+            gl_FragColor = Color * texture2D(texture, fTexCoord);
+          }
+          else {
             gl_FragColor = Color;
+          }
      }
 </script>
 

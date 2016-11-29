@@ -29,17 +29,6 @@ var reacteurGaucheId = 6;
 var avantVaisseauId = 7;
 var cockpitId = 8;
 
-/*var carlingueHeight = 3;
-var carlingueWidth = 7;
-var preAileHeight = 2;
-var preAileWidth = 5;
-var aileHeight = 7;
-var aileWidth = 4;
-var reacteurHeight = 2;
-var reacteurWidth = 4;
-var avantVaisseauHeight = 1;
-var avantVaisseauWidth = 6;*/
-
 var numNodes = 9;
 
 var projection;   //--- projection matrix
@@ -74,7 +63,8 @@ var ambientProduct, diffuseProduct, specularProduct;
 var ntextures_loaded = 0;
 var ntextures_tobeloaded = 0;
 
-var textureTest;
+var texture;
+var fleurText;
 
 function callTexture(name) {
     gl.activeTexture(gl.TEXTURE0);
@@ -99,14 +89,14 @@ function handleLoadedTexture(texture) {
 
 function initTexture() {
     // define first texture
-    textureTest = gl.createTexture();
+    texture = gl.createTexture();
 
-    textureTest.image = new Image();
-    textureTest.image.onload = function () {
-        handleLoadedTexture(textureTest);
+    texture.image = new Image();
+    texture.image.onload = function () {
+        handleLoadedTexture(texture);
     };
 
-    textureTest.image.src = "textFleur.jpg";
+    texture.image.src = "nature.gif";
     ntextures_tobeloaded++;
 }
 
@@ -226,11 +216,14 @@ function initNodes(Id) {
 function carlingue() {
     setColor(0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.5);
     modelview = initialmodelview;
+    changeActivateTex();
+    callTexture(texture);
     //modelview = mult(modelview, translate(0.0, 0.0, 0.0));
     modelview = mult(modelview, rotate(270, 1, 0, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(2.5, 0.5, 0.5));
     cube.render();
+    changeActivateTex();
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(13, 0, 0));
@@ -332,14 +325,14 @@ function preAileGauche() {
 
 function avantVaisseau() {
 
-    changeActivateTex();
-    callTexture(textureTest);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(-25.5, 0.0, 0));
     modelview = mult(modelview, rotate(90, 1, 0, 0));
     modelview = mult(modelview, rotate(270, 0, 0, 1));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.5, 1.3, 2.0));
+    changeActivateTex();
+    callTexture(texture);
     trapeze3.render();
     changeActivateTex();
 }
@@ -555,7 +548,6 @@ function render() {
     gl.enableVertexAttribArray(CoordsLoc);
     gl.enableVertexAttribArray(NormalLoc);
     gl.disableVertexAttribArray(TexCoordLoc);  // we do not need texture coordinates
-
 
     if (ntextures_loaded == ntextures_tobeloaded) {
         traverse(carlingueId);
