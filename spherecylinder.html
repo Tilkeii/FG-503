@@ -80,7 +80,7 @@
             vec4  specular = factorNH * specularProduct;
 
             if( dot(fL, fN) < 0.0 )
-            specular = vec4(0.0, 0.0, 0.0, 1.0);
+                specular = vec4(0.0, 0.0, 0.0, 1.0);
 
             Color = ambient + diffuse + specular;
             Color.a = 1.0;

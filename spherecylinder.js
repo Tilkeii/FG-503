@@ -64,13 +64,13 @@ var ntextures_loaded = 0;
 var ntextures_tobeloaded = 0;
 
 var texture;
-var fleurText;
+var mainTexture, glass, spark, blackTexture, blackTexture2;
 
 function callTexture(name) {
-    gl.activeTexture(gl.TEXTURE0);
+    gl.activeTexture(gl.TEXTURE0); //gl.TEXTURE0
     gl.bindTexture(gl.TEXTURE_2D, name);
     // Send texture to sampler
-    gl.uniform1i(gl.getUniformLocation(prog, "texture"), 0);
+    gl.uniform1i(texture, 0);
 }
 
 function handleLoadedTexture(texture) {
@@ -79,7 +79,7 @@ function handleLoadedTexture(texture) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    
+
     ntextures_loaded++;
 
     render();  // Call render function when the image has been loaded (to insure the model is displayed)
@@ -89,15 +89,60 @@ function handleLoadedTexture(texture) {
 
 function initTexture() {
     // define first texture
-    texture = gl.createTexture();
+    mainTexture = gl.createTexture();
 
-    texture.image = new Image();
-    texture.image.onload = function () {
-        handleLoadedTexture(texture);
+    mainTexture.image = new Image();
+    mainTexture.image.onload = function () {
+        handleLoadedTexture(mainTexture);
     };
 
-    texture.image.src = "nature.gif";
+    mainTexture.image.src = "texture.jpg";
     ntextures_tobeloaded++;
+
+    // define second texture
+    glass = gl.createTexture();
+
+    glass.image = new Image();
+    glass.image.onload = function () {
+        handleLoadedTexture(glass);
+    };
+
+    glass.image.src = "glass.jpg";
+    ntextures_tobeloaded++;
+
+    // define third texture
+    spark = gl.createTexture();
+
+    spark.image = new Image();
+    spark.image.onload = function () {
+        handleLoadedTexture(spark);
+    };
+
+    spark.image.src = "texture1.jpg";
+    ntextures_tobeloaded++;
+
+    // define fourth texture
+    blackTexture = gl.createTexture();
+
+    blackTexture.image = new Image();
+    blackTexture.image.onload = function () {
+        handleLoadedTexture(blackTexture);
+    };
+
+    blackTexture.image.src = "blackTexture.jpg";
+    ntextures_tobeloaded++;
+
+    // define fifth texture
+    blackTexture2 = gl.createTexture();
+
+    blackTexture2.image = new Image();
+    blackTexture2.image.onload = function () {
+        handleLoadedTexture(blackTexture2);
+    };
+
+    blackTexture2.image.src = "blackTexture2.jpg";
+    ntextures_tobeloaded++;
+
 }
 
 
@@ -128,9 +173,12 @@ function setColor(a, b, c, d, e ,f , g ,h, i)
 // Fonction pour restaurer la couleur à la couleur de base utilisé pour le vaisseau
 
 function resetColor() {
-    setColor(0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.5);
+    setColor(1,1,1,0.8,0.8,0.8,0.8,0.8,0.8);
 }
 
+function resetTexture() {
+    callTexture(mainTexture);
+}
 
 function changeActivateTex() {
     if (activateTex) {
@@ -214,16 +262,14 @@ function initNodes(Id) {
 // Fonction permettant la construction de la Carlingue et de son moteur arriere
 
 function carlingue() {
-    setColor(0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.5);
+    resetColor();
+    resetTexture();
     modelview = initialmodelview;
-    changeActivateTex();
-    callTexture(texture);
     //modelview = mult(modelview, translate(0.0, 0.0, 0.0));
     modelview = mult(modelview, rotate(270, 1, 0, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(2.5, 0.5, 0.5));
     cube.render();
-    changeActivateTex();
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(13, 0, 0));
@@ -234,6 +280,7 @@ function carlingue() {
 
     changePhong(); // Desactive phong
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
+    callTexture(blackTexture);
     for (var i = 0; i < 15; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(14.0, 0, 0.0));
@@ -244,6 +291,7 @@ function carlingue() {
     }
     resetColor();
     changePhong(); // Reactive phong
+    resetTexture();
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(13.5, 3.3, 0));
@@ -278,6 +326,7 @@ function preAileDroit() {
     cube.render();
 
     setColor(0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1);
+    callTexture(blackTexture);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(5, -3.5, 4));
     modelview = mult(modelview, rotate(270, 0, 1, 0));
@@ -286,6 +335,7 @@ function preAileDroit() {
     modelview = mult(modelview, scale(1, 1, 1));
     cylinderQuart.render();
     resetColor();
+    resetTexture();
 }
 
 function preAileGauche() {
@@ -311,6 +361,7 @@ function preAileGauche() {
     cube.render();
 
     setColor(0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1);
+    callTexture(blackTexture);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(5, -3.5, -4));
     modelview = mult(modelview, rotate(90, 0, 1, 0));
@@ -319,6 +370,7 @@ function preAileGauche() {
     modelview = mult(modelview, scale(1, 1, 1));
     cylinderQuart.render();
     resetColor();
+    resetTexture();
 }
 
 // Fonction permettant la construction de l'avant du vaisseau
@@ -331,10 +383,7 @@ function avantVaisseau() {
     modelview = mult(modelview, rotate(270, 0, 0, 1));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.5, 1.3, 2.0));
-    changeActivateTex();
-    callTexture(texture);
     trapeze3.render();
-    changeActivateTex();
 }
 
 // Fonction permettant la construction du Cockpit et de l'antenne au dessus
@@ -342,7 +391,8 @@ function avantVaisseau() {
 function cockpit() {
 
     changePhong();
-    setColor(0.1,0.1,0.1,0,0,0,0,0,0);
+    setColor(1,0.1,0.1,1,0.1,0.1,1,0.1,0.1);
+    callTexture(glass);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(-6, 4, 0));
     modelview = mult(modelview, rotate(270, 0, 1, 0));
@@ -360,6 +410,7 @@ function cockpit() {
 
     resetColor();
     changePhong();
+    resetTexture();
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(7, 3, 0));
@@ -368,12 +419,14 @@ function cockpit() {
     modelview = mult(modelview, scale(0.501, 0.3, 1.1));
     cube.render();
 
+    callTexture(blackTexture2);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(7, 5, 0));
     modelview = mult(modelview, rotate(90, 0, 1, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.1, 0.2, 0.6));
     cube.render();
+    resetTexture();
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(7, 6, 0));
@@ -395,7 +448,8 @@ function cockpit() {
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.2, 0.2, 0.7));
     cylindre.render();
-
+    //resetColor();
+    //resetTexture();
 }
 
 // Construction de l'aile Droit et de l'antenne sur celle ci
@@ -429,6 +483,19 @@ function aileDroit() {
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.2, 0.2, 0.6));
     cylindre.render();
+
+    setColor(1,0,0,0,0,0,1,0.1,0.1);
+    callTexture(spark);
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(4.5, -1.7, 15));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    modelview = mult(modelview, rotate(90, 1, 0, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.2, 0.55, 0.01));
+    trapeze1.render();
+    resetColor();
+    resetTexture();
+
 }
 
 function aileGauche() {
@@ -461,20 +528,35 @@ function aileGauche() {
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.2, 0.2, 0.6));
     cylindre.render();
+
+    setColor(1,0,0,0,0,0,1,0.1,0.1);
+    callTexture(spark);
+    modelview = initialmodelview;
+    modelview = mult(modelview, translate(4.5, -1.7, -15));
+    modelview = mult(modelview, rotate(90, 0, 1, 0));
+    modelview = mult(modelview, rotate(90, 1, 0, 0));
+    normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+    modelview = mult(modelview, scale(0.2, 0.55, 0.01));
+    trapeze1.render();
+    resetColor();
+    resetTexture();
 }
 
 // Construction du reacteur droit
 
 function reacteurDroit() {
+    setColor(0.7,0.7,0.7,0.8,0.8,0.8,0.8,0.8,0.8);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(5, -3.5, 15));
     modelview = mult(modelview, rotate(270, 0, 1, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(1.2, 1.2, 1.5));
     cylindreNoBottom.render();
+    resetColor();
 
     changePhong();
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
+    callTexture(blackTexture);
     for (var i = 0; i < 10; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(-1.5, -3.5, 15.0));
@@ -485,18 +567,22 @@ function reacteurDroit() {
     }
     resetColor();
     changePhong();
+    resetTexture();
 }
 
 function reacteurGauche() {
+    setColor(0.7,0.7,0.7,0.8,0.8,0.8,0.8,0.8,0.8);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(5, -3.5, -15));
     modelview = mult(modelview, rotate(270, 0, 1, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(1.2, 1.2, 1.5));
     cylindreNoBottom.render();
+    resetColor();
 
     changePhong();
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
+    callTexture(blackTexture);
     for (var i = 0; i < 10; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(-1.5, -3.5, -15.0));
@@ -507,6 +593,7 @@ function reacteurGauche() {
     }
     resetColor();
     changePhong();
+    resetTexture();
 }
 
 function traverse(Id) {
@@ -533,7 +620,7 @@ function render() {
 
     initialmodelview = modelview;
 
-    //  Select shader program 
+    //  Select shader program
     gl.useProgram(prog);
 
     gl.uniform4fv(gl.getUniformLocation(prog, "ambientProduct"), flatten(ambientProduct));
@@ -547,13 +634,14 @@ function render() {
 
     gl.enableVertexAttribArray(CoordsLoc);
     gl.enableVertexAttribArray(NormalLoc);
-    gl.disableVertexAttribArray(TexCoordLoc);  // we do not need texture coordinates
+    gl.enableVertexAttribArray(TexCoordLoc);  // we do not need texture coordinates
 
-    if (ntextures_loaded == ntextures_tobeloaded) {
+    if(ntextures_loaded == ntextures_tobeloaded){
+        changeActivateTex();
         traverse(carlingueId);
+        changeActivateTex();
+        //requestAnimFrame(render);
     }
-    //requestAnimFrame(render);
-
 }
 
 
@@ -725,9 +813,11 @@ window.onload = function init() {
     ProjectionLoc = gl.getUniformLocation(prog, "projection");
     NormalMatrixLoc = gl.getUniformLocation(prog, "normalMatrix");
 
+    texture = gl.getUniformLocation(prog, "texture");
+
     gl.enableVertexAttribArray(CoordsLoc);
     gl.enableVertexAttribArray(NormalLoc);
-    gl.disableVertexAttribArray(TexCoordLoc);
+    gl.enableVertexAttribArray(TexCoordLoc);
 
     gl.enable(gl.DEPTH_TEST);
 
@@ -739,6 +829,9 @@ window.onload = function init() {
     //  set initial camera position at z=40, with an "up" vector aligned with y axis
     //   (this defines the initial value of the modelview matrix )
     rotator.setView([0, 0, 1], [0, 1, 0], 40);
+
+
+
 
     ambientProduct = mult(lightAmbient, materialAmbient);
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
