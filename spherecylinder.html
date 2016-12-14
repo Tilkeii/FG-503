@@ -98,6 +98,40 @@
      }
 </script>
 
+<script type="x-shader/x-vertex" id="vshaderbox">
+     uniform mat4 projection;
+     uniform mat4 modelview;
+
+     attribute vec3 vcoords;
+     attribute vec3 vnormal;
+     attribute vec2 vtexcoord;
+
+     varying vec3 fCoords;
+
+     void main() {
+        vec2 tmp = vtexcoord;
+        vec3 tmp2 = vnormal;
+   // inserted only to map texcoord and normal in this shader
+   // (required since models uses texture coordinates even though
+   //   we will not use them in this shader)
+
+        vec4 eyeCoords = modelview * vec4(vcoords,1.0);
+        gl_Position = projection * eyeCoords;
+        fCoords = vcoords;//gl_Position.xyz;
+     }
+</script>
+
+<script type="x-shader/x-fragment" id="fshaderbox">
+     precision mediump float;
+
+     varying vec3 fCoords;
+
+     uniform samplerCube skybox;
+
+     void main() {
+          gl_FragColor = textureCube(skybox, fCoords);
+     }
+</script>
 
 
 <script type="text/javascript" src="simple-rotator.js"></script>

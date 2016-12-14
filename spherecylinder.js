@@ -18,6 +18,14 @@ var ModelviewLoc;
 var NormalMatrixLoc;
 var initialmodelview;
 
+var aCoordsbox;     // Location of the coords attribute variable in the shader program used for texturing the environment box.
+var aNormalbox;
+var aTexCoordbox;
+
+var uModelviewbox;
+var uProjectionbox;
+var uEnvbox;
+
 // Id des differents composants
 var carlingueId = 0;
 var preAileDroitId = 1;
@@ -39,9 +47,9 @@ var normalMatrix = mat3();  //--- create a 3X3 matrix that will affect normals
 
 var rotator;   // A SimpleRotator object to enable rotation by mouse dragging.
 
-var cube, trapeze1, trapeze2, trapeze3, cylindre, triangle, cylindreNoBottom, cylinderQuart;
+var cube1, trapeze1, trapeze2, trapeze3, cylindre, triangle, cylindreNoBottom, cylinderQuart;
 
-var prog;  // shader program identifier
+var prog, progbox;  // shader program identifier
 
 var lightPosition = vec4(50.0, 20.0, 100.0, 1.0);
 
@@ -53,6 +61,12 @@ var materialAmbient = vec4(0.0, 0.1, 0.3, 1.0);
 var materialDiffuse = vec4(0.48, 0.55, 0.69, 1.0);
 var materialSpecular = vec4(0.8, 0.8, 0.8, 1.0);
 var materialShininess = 100.0;
+
+var texIDmap0;  // environmental texture identifier
+var envbox;  // model identifiers
+
+var ct = 0;
+var img = new Array(6);
 
 var phong = 1; var activateTex = 0;
 
@@ -87,7 +101,70 @@ function handleLoadedTexture(texture) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
+function handleLoadedTextureMap(texture) {
+
+    ct++;
+    if (ct == 6) {
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        var targets = [
+            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+            gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+            gl.TEXTURE_CUBE_MAP_POSITIVE_Z, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+        ];
+        for (var j = 0; j < 6; j++) {
+            gl.texImage2D(targets[j], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img[j]);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        }
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+    }
+    ntextures_loaded++;
+    render();  // Call render function when the image has been loaded (to insure the model is displayed)
+}
+
+function createModelbox(modelData) {  // For creating the environment box.
+    var model = {};
+    model.coordsBuffer = gl.createBuffer();
+    model.indexBuffer = gl.createBuffer();
+    model.count = modelData.indices.length;
+    gl.bindBuffer(gl.ARRAY_BUFFER, model.coordsBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, modelData.vertexPositions, gl.STATIC_DRAW);
+    console.log(modelData.vertexPositions.length);
+    console.log(modelData.indices.length);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, modelData.indices, gl.STATIC_DRAW);
+    model.render = function () {
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.coordsBuffer);
+        gl.vertexAttribPointer(aCoordsbox, 3, gl.FLOAT, false, 0, 0);
+        gl.uniformMatrix4fv(uModelviewbox, false, flatten(modelview));
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+        gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_SHORT, 0);
+    };
+    return model;
+}
+
 function initTexture() {
+
+    var urls = [
+        "images/nebula_posx.png", "images/nebula_negx.png",
+        "images/nebula_posy.png", "images/nebula_negy.png",
+        "images/nebula_posz.png", "images/nebula_negz.png"
+    ];
+    texIDmap0 = gl.createTexture();
+    //texIDmap0.isloaded = false;
+
+    for (var i = 0; i < 6; i++) {
+        img[i] = new Image();
+        img[i].onload = function () {  // this function is called when the image download is complete
+            handleLoadedTextureMap(texIDmap0);
+        };
+        img[i].src = urls[i];   // this line starts the image downloading thread
+        ntextures_tobeloaded++;
+    }
+
     // define first texture
     mainTexture = gl.createTexture();
 
@@ -142,7 +219,6 @@ function initTexture() {
 
     blackTexture2.image.src = "blackTexture2.jpg";
     ntextures_tobeloaded++;
-
 }
 
 
@@ -269,7 +345,7 @@ function carlingue() {
     modelview = mult(modelview, rotate(270, 1, 0, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(2.5, 0.5, 0.5));
-    cube.render();
+    cube1.render();
 
     modelview = initialmodelview;
     modelview = mult(modelview, translate(13, 0, 0));
@@ -287,7 +363,7 @@ function carlingue() {
         modelview = mult(modelview, rotate(i*15, 1, 0, 0));
         normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
         modelview = mult(modelview, scale(0.1, 0.39, 0.02));
-        cube.render();
+        cube1.render();
     }
     resetColor();
     changePhong(); // Reactive phong
@@ -323,7 +399,7 @@ function preAileDroit() {
     modelview = mult(modelview, translate(13, 1, 2.45));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.28, 0.25, 0.01));
-    cube.render();
+    cube1.render();
 
     setColor(0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1);
     callTexture(blackTexture);
@@ -358,7 +434,7 @@ function preAileGauche() {
     modelview = mult(modelview, translate(13, 1, -2.45));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.28, 0.25, 0.01));
-    cube.render();
+    cube1.render();
 
     setColor(0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1);
     callTexture(blackTexture);
@@ -417,7 +493,7 @@ function cockpit() {
     modelview = mult(modelview, rotate(90, 0, 1, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.501, 0.3, 1.1));
-    cube.render();
+    cube1.render();
 
     callTexture(blackTexture2);
     modelview = initialmodelview;
@@ -425,7 +501,7 @@ function cockpit() {
     modelview = mult(modelview, rotate(90, 0, 1, 0));
     normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
     modelview = mult(modelview, scale(0.1, 0.2, 0.6));
-    cube.render();
+    cube1.render();
     resetTexture();
 
     modelview = initialmodelview;
@@ -563,7 +639,7 @@ function reacteurDroit() {
         modelview = mult(modelview, rotate(i*20, 1, 0, 0));
         normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
         modelview = mult(modelview, scale(0.1, 0.2, 0.01));
-        cube.render();
+        cube1.render();
     }
     resetColor();
     changePhong();
@@ -589,7 +665,7 @@ function reacteurGauche() {
         modelview = mult(modelview, rotate(i*20, 1, 0, 0));
         normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
         modelview = mult(modelview, scale(0.1, 0.2, 0.01));
-        cube.render();
+        cube1.render();
     }
     resetColor();
     changePhong();
@@ -609,7 +685,7 @@ function render() {
     gl.clearColor(0.79, 0.76, 0.27, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    projection = perspective(70.0, 1.0, 1.0, 200.0);
+    projection = perspective(70.0, 1.0, 1.0, 2000.0);
 
     //--- Get the rotation matrix obtained by the displacement of the mouse
     //---  (note: the matrix obtained is already "flattened" by the function getViewMatrix)
@@ -618,25 +694,41 @@ function render() {
 
     normalMatrix = extractNormalMatrix(modelview);
 
-    initialmodelview = modelview;
-
-    //  Select shader program
-    gl.useProgram(prog);
-
-    gl.uniform4fv(gl.getUniformLocation(prog, "ambientProduct"), flatten(ambientProduct));
-    gl.uniform4fv(gl.getUniformLocation(prog, "diffuseProduct"), flatten(diffuseProduct));
-    gl.uniform4fv(gl.getUniformLocation(prog, "specularProduct"), flatten(specularProduct));
-    gl.uniform1f(gl.getUniformLocation(prog, "shininess"), materialShininess);
-
-    gl.uniform4fv(gl.getUniformLocation(prog, "lightPosition"), flatten(lightPosition));
-
-    gl.uniformMatrix4fv(ProjectionLoc, false, flatten(projection));  // send projection matrix to the new shader program
-
-    gl.enableVertexAttribArray(CoordsLoc);
-    gl.enableVertexAttribArray(NormalLoc);
-    gl.enableVertexAttribArray(TexCoordLoc);  // we do not need texture coordinates
-
     if(ntextures_loaded == ntextures_tobeloaded){
+        initialmodelview = modelview;
+
+        // Draw the environment (box)
+        gl.useProgram(progbox); // Select the shader program that is used for the environment box.
+
+        gl.uniformMatrix4fv(uProjectionbox, false, flatten(projection));
+
+        gl.enableVertexAttribArray(aCoordsbox);
+        gl.disableVertexAttribArray(aNormalbox);     // normals are not used for the box
+        gl.disableVertexAttribArray(aTexCoordbox);  // texture coordinates not used for the box
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texIDmap0);
+        // Send texture to sampler
+        gl.uniform1i(uEnvbox, 0);
+
+        envbox.render();
+
+        //  Select shader program
+        gl.useProgram(prog);
+
+        gl.uniform4fv(gl.getUniformLocation(prog, "ambientProduct"), flatten(ambientProduct));
+        gl.uniform4fv(gl.getUniformLocation(prog, "diffuseProduct"), flatten(diffuseProduct));
+        gl.uniform4fv(gl.getUniformLocation(prog, "specularProduct"), flatten(specularProduct));
+        gl.uniform1f(gl.getUniformLocation(prog, "shininess"), materialShininess);
+
+        gl.uniform4fv(gl.getUniformLocation(prog, "lightPosition"), flatten(lightPosition));
+
+        gl.uniformMatrix4fv(ProjectionLoc, false, flatten(projection));  // send projection matrix to the new shader program
+
+        gl.enableVertexAttribArray(CoordsLoc);
+        gl.enableVertexAttribArray(NormalLoc);
+        gl.enableVertexAttribArray(TexCoordLoc);  // we do not need texture coordinates
+
         changeActivateTex();
         traverse(carlingueId);
         changeActivateTex();
@@ -819,19 +911,34 @@ window.onload = function init() {
     gl.enableVertexAttribArray(NormalLoc);
     gl.enableVertexAttribArray(TexCoordLoc);
 
-    gl.enable(gl.DEPTH_TEST);
-
     gl.uniform1i(gl.getUniformLocation(prog, "phong"), 1); //init phong
-    gl.uniform1i(gl.getUniformLocation(prog, "activateTex"), 0); //init phong
+    gl.uniform1i(gl.getUniformLocation(prog, "activateTex"), 0); //init activateTex
+
+    // LOAD ENVIRONMENT SHADER (for the environment)
+    var vertexShaderSourceBox = getTextContent("vshaderbox");
+    var fragmentShaderSourceBox = getTextContent("fshaderbox");
+    progbox = createProgram(gl, vertexShaderSourceBox, fragmentShaderSourceBox);
+
+    gl.useProgram(progbox);
+
+    aCoordsbox = gl.getAttribLocation(progbox, "vcoords");
+    aNormalbox = gl.getAttribLocation(progbox, "vnormal");
+    aTexCoordbox = gl.getAttribLocation(progbox, "vtexcoord");
+
+    uModelviewbox = gl.getUniformLocation(progbox, "modelview");
+    uProjectionbox = gl.getUniformLocation(progbox, "projection");
+
+    uEnvbox = gl.getUniformLocation(progbox, "skybox");
+
+    // Fin load Environment
+
+    gl.enable(gl.DEPTH_TEST);
 
     //  create a "rotator" monitoring mouse mouvement
     rotator = new SimpleRotator(canvas, render);
     //  set initial camera position at z=40, with an "up" vector aligned with y axis
     //   (this defines the initial value of the modelview matrix )
     rotator.setView([0, 0, 1], [0, 1, 0], 40);
-
-
-
 
     ambientProduct = mult(lightAmbient, materialAmbient);
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
@@ -842,7 +949,7 @@ window.onload = function init() {
 
     // Permet la création des modèles : Modèles initialisés dans basic-objects-IFS
 
-    cube = createModel(cube(10));
+    cube1 = createModel(cube(10));
     trapeze1 = createModel(trapeze1(10));
     trapeze2 = createModel(trapeze2(10));
     trapeze3 = createModel(trapeze3(10));
@@ -850,6 +957,8 @@ window.onload = function init() {
     cylindreNoBottom = createModel(uvCylinder(1, 10, 32, true, false));
     triangle = createModel(triangle(10));
     cylinderQuart = createModel(cylinderQuart(4, 1.5, 32));
+
+    envbox = createModelbox(cube(1000));
 
     for (var i = 0; i < numNodes; i++) initNodes(i);
 
