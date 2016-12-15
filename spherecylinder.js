@@ -47,7 +47,7 @@ var normalMatrix = mat3();  //--- create a 3X3 matrix that will affect normals
 
 var rotator;   // A SimpleRotator object to enable rotation by mouse dragging.
 
-var cube1, trapeze1, trapeze2, trapeze3, cylindre, triangle, cylindreNoBottom, cylinderQuart;
+var cube1, trapeze1, trapeze2, trapeze3, cylindre, triangle, cylindreNoBottom, cylinderQuart, sphere;
 
 var prog, progbox;  // shader program identifier
 
@@ -68,7 +68,7 @@ var envbox;  // model identifiers
 var ct = 0;
 var img = new Array(6);
 
-var phong = 1; var activateTex = 0;
+var phong = 1; var activateTex = 0; var translucide = 0;
 
 var figure = [];
 
@@ -78,13 +78,18 @@ var ntextures_loaded = 0;
 var ntextures_tobeloaded = 0;
 
 var texture;
-var mainTexture, glass, spark, blackTexture, blackTexture2;
+var mainTexture, glass, spark, blackTexture, blackTexture2, textName;
+var earthT, marsT, mercuryT, venusT, moonT;
 
-function callTexture(name) {
-    gl.activeTexture(gl.TEXTURE0); //gl.TEXTURE0
+var theta = 0;
+var alphaLoc;
+var X = 0, Y = 0;
+
+function callTexture(name, tex, int) {
+    gl.activeTexture(tex); //gl.TEXTURE0
     gl.bindTexture(gl.TEXTURE_2D, name);
     // Send texture to sampler
-    gl.uniform1i(texture, 0);
+    gl.uniform1i(texture, int);
 }
 
 function handleLoadedTexture(texture) {
@@ -219,6 +224,73 @@ function initTexture() {
 
     blackTexture2.image.src = "blackTexture2.jpg";
     ntextures_tobeloaded++;
+
+    // define earth texture
+    earthT = gl.createTexture();
+
+    earthT.image = new Image();
+    earthT.image.onload = function () {
+        handleLoadedTexture(earthT);
+    };
+
+    earthT.image.src = "images/earth.jpg";
+    ntextures_tobeloaded++;
+
+    // define mars texture
+    marsT = gl.createTexture();
+
+    marsT.image = new Image();
+    marsT.image.onload = function () {
+        handleLoadedTexture(marsT);
+    };
+
+    marsT.image.src = "images/mars.jpg";
+    ntextures_tobeloaded++;
+
+    // define mercury texture
+    mercuryT = gl.createTexture();
+
+    mercuryT.image = new Image();
+    mercuryT.image.onload = function () {
+        handleLoadedTexture(mercuryT);
+    };
+
+    mercuryT.image.src = "images/mercury.jpg";
+    ntextures_tobeloaded++;
+
+    // define venus texture
+    venusT = gl.createTexture();
+
+    venusT.image = new Image();
+    venusT.image.onload = function () {
+        handleLoadedTexture(venusT);
+    };
+
+    venusT.image.src = "images/venus.jpg";
+    ntextures_tobeloaded++;
+
+    // define moon texture
+    moonT = gl.createTexture();
+
+    moonT.image = new Image();
+    moonT.image.onload = function () {
+        handleLoadedTexture(moonT);
+    };
+
+    moonT.image.src = "images/moon.jpg";
+    ntextures_tobeloaded++;
+
+    // define name texture
+    textName = gl.createTexture();
+
+    textName.image = new Image();
+    textName.image.onload = function () {
+        handleLoadedTexture(textName);
+    };
+
+    textName.image.src = "images/name.png";
+    ntextures_tobeloaded++;
+
 }
 
 
@@ -253,7 +325,7 @@ function resetColor() {
 }
 
 function resetTexture() {
-    callTexture(mainTexture);
+    callTexture(mainTexture, gl.TEXTURE0, 0);
 }
 
 function changeActivateTex() {
@@ -295,6 +367,7 @@ function initNodes(Id) {
 
         case carlingueId:
             m = rotate(70, 0, 1, 0);
+            m = mult(m, translate(-X, 0 , Y));
             m = mult(m, rotate(45, 1, 0, 0));
             m = mult(m, rotate(10, 0, 0, 1));
             figure[carlingueId] = createNode(m, carlingue, null, preAileDroitId);
@@ -356,7 +429,7 @@ function carlingue() {
 
     changePhong(); // Desactive phong
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
-    callTexture(blackTexture);
+    callTexture(blackTexture, gl.TEXTURE1, 1);
     for (var i = 0; i < 15; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(14.0, 0, 0.0));
@@ -402,7 +475,7 @@ function preAileDroit() {
     cube1.render();
 
     setColor(0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1);
-    callTexture(blackTexture);
+    callTexture(blackTexture, gl.TEXTURE1, 1);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(5, -3.5, 4));
     modelview = mult(modelview, rotate(270, 0, 1, 0));
@@ -437,7 +510,7 @@ function preAileGauche() {
     cube1.render();
 
     setColor(0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1);
-    callTexture(blackTexture);
+    callTexture(blackTexture, gl.TEXTURE1, 1);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(5, -3.5, -4));
     modelview = mult(modelview, rotate(90, 0, 1, 0));
@@ -468,7 +541,7 @@ function cockpit() {
 
     changePhong();
     setColor(1,0.1,0.1,1,0.1,0.1,1,0.1,0.1);
-    callTexture(glass);
+    callTexture(glass, gl.TEXTURE2, 2);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(-6, 4, 0));
     modelview = mult(modelview, rotate(270, 0, 1, 0));
@@ -495,7 +568,7 @@ function cockpit() {
     modelview = mult(modelview, scale(0.501, 0.3, 1.1));
     cube1.render();
 
-    callTexture(blackTexture2);
+    callTexture(blackTexture2, gl.TEXTURE3, 3);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(7, 5, 0));
     modelview = mult(modelview, rotate(90, 0, 1, 0));
@@ -561,7 +634,7 @@ function aileDroit() {
     cylindre.render();
 
     setColor(1,0,0,0,0,0,1,0.1,0.1);
-    callTexture(spark);
+    callTexture(spark, gl.TEXTURE4, 4);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(4.5, -1.7, 15));
     modelview = mult(modelview, rotate(90, 0, 1, 0));
@@ -606,7 +679,7 @@ function aileGauche() {
     cylindre.render();
 
     setColor(1,0,0,0,0,0,1,0.1,0.1);
-    callTexture(spark);
+    callTexture(spark, gl.TEXTURE4, 4);
     modelview = initialmodelview;
     modelview = mult(modelview, translate(4.5, -1.7, -15));
     modelview = mult(modelview, rotate(90, 0, 1, 0));
@@ -632,7 +705,7 @@ function reacteurDroit() {
 
     changePhong();
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
-    callTexture(blackTexture);
+    callTexture(blackTexture, gl.TEXTURE1, 1);
     for (var i = 0; i < 10; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(-1.5, -3.5, 15.0));
@@ -658,7 +731,7 @@ function reacteurGauche() {
 
     changePhong();
     setColor(0.1,0.1,0.1,0,0,0,0,0,0);
-    callTexture(blackTexture);
+    callTexture(blackTexture, gl.TEXTURE1, 1);
     for (var i = 0; i < 10; i++) {
         modelview = initialmodelview;
         modelview = mult(modelview, translate(-1.5, -3.5, -15.0));
@@ -682,10 +755,16 @@ function traverse(Id) {
 }
 
 function render() {
+    gl.depthMask(true);
+    gl.uniform1i(gl.getUniformLocation(prog, "translucide"), 0);
+
+    for (var i = 0; i < numNodes; i++) initNodes(i);
     gl.clearColor(0.79, 0.76, 0.27, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    projection = perspective(70.0, 1.0, 1.0, 2000.0);
+    theta += 0.5;
+
+    projection = perspective(70.0, 1.0, 1.0, 2500.0);
 
     //--- Get the rotation matrix obtained by the displacement of the mouse
     //---  (note: the matrix obtained is already "flattened" by the function getViewMatrix)
@@ -731,12 +810,89 @@ function render() {
 
         changeActivateTex();
         traverse(carlingueId);
+
+        callTexture(earthT, gl.TEXTURE5, 5);
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(500, 500 , 0));
+        modelview = mult(modelview, rotate(theta, 0.0, 1.0, 0.0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(5, 5, 5));
+        sphere.render();
+
+        callTexture(moonT, gl.TEXTURE10, 10);
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(400, 500 , 0));
+        modelview = mult(modelview, rotate(theta, 0.0, 1.0, 0.0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(2, 2, 2));
+        sphere.render();
+
+        callTexture(marsT, gl.TEXTURE6, 6);
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(100, 1000, 0));
+        modelview = mult(modelview, rotate(theta, 0.0, 1.0, 0.0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(5, 5, 5));
+        sphere.render();
+
+        callTexture(mercuryT, gl.TEXTURE7, 7);
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(-400, -800, 0));
+        modelview = mult(modelview, rotate(theta, 0.0, 1.0, 0.0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(5, 5, 5));
+        sphere.render();
+
+        callTexture(venusT, gl.TEXTURE8, 8);
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(800, -200, 0));
+        modelview = mult(modelview, rotate(theta, 0.0, 1.0, 0.0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(5, 5, 5));
+        sphere.render();
+
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.enable(gl.BLEND);
+        gl.depthMask(false);
+        gl.uniform1f(alphaLoc, 0.5);
+        gl.uniform1i(gl.getUniformLocation(prog, "translucide"), 1);
+
+        callTexture(textName, gl.TEXTURE9, 9);
+        modelview = initialmodelview;
+        modelview = mult(modelview, translate(20, 20, 0));
+        modelview = mult(modelview, rotate(theta, 0.0, 0.0, 1.0));
+        normalMatrix = extractNormalMatrix(modelview);  // always extract the normal matrix before scaling
+        modelview = mult(modelview, scale(1, 1, 1));
+        cube1.render();
+
         changeActivateTex();
+
+        //console.log(X, Y);
+
         //requestAnimFrame(render);
     }
 }
 
-
+/**
+ *  An event listener for the keydown event.  It is installed by the init() function.
+ */
+function doKey(evt) {
+    var translationChanged = true;
+    switch (evt.keyCode) {
+        case 37: Y -= 0.5; break;        // left arrow
+        case 39: Y += 0.5; break;       // right arrow
+        case 38: X -= 0.5; break;        // up arrow
+        case 40: X += 0.5; break;        // down arrow
+        case 13: X = Y = 0; break;  // return
+        case 36: X = Y = 0; break;  // home
+        default: translationChanged = false;
+    }
+    if (translationChanged) {
+        evt.preventDefault();
+        render();
+        theta -= 0.5;  //*** theta must be decremented to compensate for the increment caused by the render callback (every 0.1 sec)
+    }
+}
 
 function unflatten(matrix) {
     var result = mat4();
@@ -906,6 +1062,7 @@ window.onload = function init() {
     NormalMatrixLoc = gl.getUniformLocation(prog, "normalMatrix");
 
     texture = gl.getUniformLocation(prog, "texture");
+    alphaLoc = gl.getUniformLocation(prog, "alpha");
 
     gl.enableVertexAttribArray(CoordsLoc);
     gl.enableVertexAttribArray(NormalLoc);
@@ -913,6 +1070,7 @@ window.onload = function init() {
 
     gl.uniform1i(gl.getUniformLocation(prog, "phong"), 1); //init phong
     gl.uniform1i(gl.getUniformLocation(prog, "activateTex"), 0); //init activateTex
+    alphaLoc = gl.getUniformLocation(prog, "alpha");
 
     // LOAD ENVIRONMENT SHADER (for the environment)
     var vertexShaderSourceBox = getTextContent("vshaderbox");
@@ -957,12 +1115,16 @@ window.onload = function init() {
     cylindreNoBottom = createModel(uvCylinder(1, 10, 32, true, false));
     triangle = createModel(triangle(10));
     cylinderQuart = createModel(cylinderQuart(4, 1.5, 32));
+    sphere = createModel(uvSphere(10));
 
-    envbox = createModelbox(cube(1000));
+    envbox = createModelbox(cube(2000));
 
-    for (var i = 0; i < numNodes; i++) initNodes(i);
+    //for (var i = 0; i < numNodes; i++) initNodes(i);
 
-    render();
+    document.addEventListener("keydown", doKey, false);  // add a callback function (when a key is pressed)
+
+    //render();
+    setInterval(render, 100);
 };
 
 
